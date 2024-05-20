@@ -25,6 +25,12 @@ foreach(file ${test_sources})
   # Setup code coverage if enabled
   #
 
+  if (${CMAKE_PROJECT_NAME}_USE_ASAN)
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -O0 -g -fsanitize=address -static-libasan)
+    target_link_options(${CMAKE_PROJECT_NAME} PUBLIC -fsanitize=address -static-libasan)
+    verbose_message("ASAN is enabled and provided with GCC.")
+  endif()
+
   if (${CMAKE_PROJECT_NAME}_ENABLE_CODE_COVERAGE)
     target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
     target_link_options(${CMAKE_PROJECT_NAME} PUBLIC -fprofile-arcs -ftest-coverage)
@@ -55,14 +61,6 @@ foreach(file ${test_sources})
         GTest::GTest
         GTest::Main
         ${GOOGLE_MOCK_LIBRARIES}
-        ${${CMAKE_PROJECT_NAME}_TEST_LIB}
-    )
-  elseif(${CMAKE_PROJECT_NAME}_USE_CATCH2)
-    find_package(Catch2 REQUIRED)
-    target_link_libraries(
-      ${test_name}_Tests
-      PUBLIC
-        Catch2::Catch2
         ${${CMAKE_PROJECT_NAME}_TEST_LIB}
     )
   else()
