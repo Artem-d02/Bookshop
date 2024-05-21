@@ -61,6 +61,8 @@ TEST(BookShopTest, checkShop) {
   ASSERT_FALSE(shop.MakeOrder(invalidOrder));
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock() - book1Count);
 
+  ASSERT_TRUE(shop.HasOrder(validOrder.ID()));
+
   ASSERT_TRUE(shop.DeliverOrder(validOrder.ID()));
   ASSERT_FALSE(shop.DeliverOrder(invalidOrder.ID()));
 

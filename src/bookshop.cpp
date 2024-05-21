@@ -198,10 +198,17 @@ namespace NBookshop {
     }
 
     bool TShop::RefundOrder(ui64 orderID) {
+        if (Orders_.find(orderID) == Orders_.end()) {
+            return false;
+        }
+        for (const auto& bookInfo : Orders_[orderID].Books()) {
+            RefundBook(bookInfo);
+        }
+        Orders_[orderID].ChangeStatus(TOrder::TStatus::REFUNDED);
         return true;
     }
 
-    bool TShop::HasBook(ui64 bookID) {
+    bool TShop::HasBook(ui64 bookID) const {
         return BooksInStock_.find(bookID) != BooksInStock_.end();
     }
 
@@ -209,7 +216,11 @@ namespace NBookshop {
         return BooksInStock_[bookID];
     }
 
-    TOrder& TShop::Order(ui64 orderID) {
+    bool TShop::HasOrder(ui64 orderID) const {
+        return Orders_.find(orderID) != Orders_.end();
+    }
 
+    TOrder& TShop::Order(ui64 orderID) {
+        return Orders_[orderID];
     }
 }
