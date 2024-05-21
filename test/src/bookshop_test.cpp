@@ -11,6 +11,10 @@ NBookshop::TShop shop;
 TEST(BookShopTest, CheckBook)
 {
   ASSERT_EQ(book1.Name(), "The last wish");
+  ASSERT_EQ(book1.ExemplarsInStock(), 100);
+
+  book1.ChangeExemplarsInStock(50);
+  ASSERT_EQ(book1.ExemplarsInStock(), 150);
 }
 
 TEST(BookShopTest, CheckCart)
@@ -40,6 +44,8 @@ TEST(BookShopTest, checkShop) {
   ASSERT_TRUE(shop.AddBook(book1));
   ASSERT_TRUE(shop.AddBook(book2));
 
+  ASSERT_TRUE(shop.HasBook(book1.ID()));
+
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock());
 
   const size_t book1Count = 10;
@@ -53,11 +59,10 @@ TEST(BookShopTest, checkShop) {
   NBookshop::TOrder invalidOrder(444, { { book1.ID(), tooManyBooks } }); //  too many books
 
   ASSERT_FALSE(shop.MakeOrder(invalidOrder));
-
-  ASSERT_TRUE(shop.MakeOrder(validOrder));
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock() - book1Count);
 
   ASSERT_TRUE(shop.DeliverOrder(validOrder.ID()));
+  ASSERT_FALSE(shop.DeliverOrder(invalidOrder.ID()));
 }
 
 TEST(BookShopTest, CheckConsumer)

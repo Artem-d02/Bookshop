@@ -20,6 +20,7 @@ namespace NBookshop {
         std::string Genre_;
         size_t ExemplarsInStock_;
     public:
+        TBook() = default;
         TBook(
             const std::string& name,
             const std::string& author,
@@ -35,7 +36,8 @@ namespace NBookshop {
         double Price() const;
         const std::string& Publishing() const;
         const std::string& Genre() const;
-        size_t& ExemplarsInStock();
+        size_t ExemplarsInStock() const;
+        bool ChangeExemplarsInStock(int delta);
         ui64 ID() const;
     };
 
@@ -78,11 +80,12 @@ namespace NBookshop {
         bool MakeOrder(const TOrder& newOrder);
         bool DeliverOrder(ui64 orderID);
         bool RefundBook(ui64 bookID);
+        bool HasBook(ui64 bookID);
         TBook& BookInfo(ui64 bookID);
         TOrder& Order(ui64 orderID);
     };
 
-    class TConsumer {
+    class TConsumer final {
     public:
         enum class RefundOptions {
             COURIER,
@@ -95,7 +98,6 @@ namespace NBookshop {
         std::vector<ui64> Orders_;
     public:
         TConsumer() = default;
-        virtual ~TConsumer() = default;
         explicit TConsumer(ui64 ID);
         bool MakeCart();
         bool AddBook(const TBook& book);

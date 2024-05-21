@@ -46,8 +46,18 @@ namespace NBookshop {
         return Genre_;
     }
 
-    size_t& TBook::ExemplarsInStock() {
+    size_t TBook::ExemplarsInStock() const {
         return ExemplarsInStock_;
+    }
+
+    bool TBook::ChangeExemplarsInStock(int delta) {
+        if (delta < 0) {
+            if (std::abs(delta) > ExemplarsInStock_) {
+                return false;
+            }
+        }
+        ExemplarsInStock_ += delta;
+        return true;
     }
 
     ui64 TBook::ID() const {
@@ -135,14 +145,47 @@ namespace NBookshop {
     }
 
     bool TShop::AddBook(const TBook& book) {
-        return true;
+        try {
+            auto it = BooksInStock_.find(book.ID());
+            if (it != BooksInStock_.end()) {
+                return it->second.ChangeExemplarsInStock(book.ExemplarsInStock());
+            }
+            else {
+                BooksInStock_.emplace(book.ID(), book);
+            }
+            return true;
+        }
+        catch (const std::exception& e) {
+            return false;
+        }
     }
 
     bool TShop::MakeOrder(const TOrder& newOrder) {
+        //  Check books in stock
+        for (const auto& [bookID, count] : newOrder.Books()) {
+            if (BooksInStock_.find(bookID) == BooksInStock_.end()) {
+                return false;
+            }
+            if (BooksInStock_[bookID].ExemplarsInStock() < count) {
+                return false;
+            }
+        }
+
+        //  If there are enough books
+        for (const auto& [bookID, count] : newOrder.Books()) {
+            BooksInStock_[bookID].ChangeExemplarsInStock(-count);
+        }
+
+        Orders_.emplace(newOrder.ID(), newOrder);
+
         return true;
     }
 
     bool TShop::DeliverOrder(ui64 orderID) {
+        if (Orders_.find(orderID) == Orders_.end()) {
+            return false;
+        }
+        Orders_[orderID].ChangeStatus(TOrder::TStatus::DONE);
         return true;
     }
 
@@ -150,8 +193,12 @@ namespace NBookshop {
         return true;
     }
 
+    bool TShop::HasBook(ui64 bookID) {
+        return BooksInStock_.find(bookID) != BooksInStock_.end();
+    }
+
     TBook& TShop::BookInfo(ui64 bookID) {
-        
+        return BooksInStock_[bookID];
     }
 
     TOrder& TShop::Order(ui64 orderID) {
