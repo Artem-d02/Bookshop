@@ -65,6 +65,10 @@ TEST(BookShopTest, checkShop) {
   ASSERT_FALSE(shop.DeliverOrder(invalidOrder.ID()));
 
   ASSERT_TRUE(shop.RefundBook({ book2.ID(), 1 }));
+
+  ASSERT_TRUE(shop.RefundOrder(validOrder.ID()));
+
+  ASSERT_TRUE(shop.Order(validOrder.ID()).GetStatus() == NBookshop::TOrder::TStatus::REFUNDED);
 }
 
 TEST(BookShopTest, CheckConsumer)
