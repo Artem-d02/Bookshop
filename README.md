@@ -58,10 +58,6 @@ This project makes use of [SemVer](http://semver.org/) for versioning. A list of
 existing versions can be found in the
 [project's releases](https://github.com/filipdutescu/modern-cpp-template/releases).
 
-## Authors
-
-* **Filip-Ioan Dutescu** - [@filipdutescu](https://github.com/filipdutescu)
-
 ## License
 
 This project is licensed under the [Unlicense](https://unlicense.org/) - see the
