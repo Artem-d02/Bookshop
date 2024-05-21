@@ -14,8 +14,8 @@ TEST(BookShopTest, CheckBook)
 TEST(BookShopTest, CheckCart)
 {
   NBookshop::TCart cart(1111);
-  cart.AddBook(book1.ID());
-  cart.AddBook(book2.ID());
+  cart.AddBook(book1);
+  cart.AddBook(book2);
   ASSERT_EQ(cart.BooksInCart().size(), 2);
   ASSERT_EQ(cart.BooksInCart()[0], book1.ID());
   ASSERT_EQ(cart.BooksInCart()[1], book2.ID());

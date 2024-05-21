@@ -44,7 +44,7 @@ namespace NBookshop {
         std::vector<ui64> Books_;
     public:
         explicit TCart(ui64 cartId = CartIDCounter++);
-        bool AddBook(ui64 bookID);
+        bool AddBook(const TBook& book);
         const std::vector<ui64>& BooksInCart() const;
     };
 

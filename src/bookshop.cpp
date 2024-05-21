@@ -57,7 +57,8 @@ namespace NBookshop {
         : ID_(cartID)
     {}
 
-    bool TCart::AddBook(ui64 bookID) {
+    bool TCart::AddBook(const TBook& book) {
+        Books_.push_back(book.ID());
         return true;
     }
 
