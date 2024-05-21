@@ -9,6 +9,7 @@ namespace NBookshop {
     using ui64 = u_int64_t;
     static ui64 BookIDCounter{0};
     static ui64 CartIDCounter{0};
+    static ui64 OrderIDCounter{0};
 
     class TBook final {
         ui64 ID_;
@@ -48,6 +49,7 @@ namespace NBookshop {
         explicit TCart(ui64 cartId = CartIDCounter++);
         bool AddBook(const TBook& book);
         const std::vector<ui64>& BooksInCart() const;
+        void Clear();
     };
 
     class TOrder final {
@@ -98,10 +100,10 @@ namespace NBookshop {
         ui64 ID_{};
         TCart Cart_;
         std::vector<ui64> Orders_;
+        TShop* Shop_;
     public:
-        TConsumer() = default;
-        explicit TConsumer(ui64 ID);
-        bool MakeCart();
+        TConsumer(ui64 ID, TShop* shop);
+        bool MakeCart(ui64 cartID);
         bool AddBook(const TBook& book);
         TOrder MakeOrder(ui64 orderID);
         TOrder::TStatus GetStatus(ui64 orderID);

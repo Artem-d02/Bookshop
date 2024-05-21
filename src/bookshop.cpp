@@ -82,6 +82,10 @@ namespace NBookshop {
         return Books_;
     }
 
+    void TCart::Clear() {
+        Books_.clear();
+    }
+
     TOrder::TOrder(ui64 ID, const std::vector<std::pair<ui64, size_t>>& books)
         : Books_(books), ID_(ID)
     {}
@@ -108,28 +112,40 @@ namespace NBookshop {
         return ID_;
     }
 
-    TConsumer::TConsumer(ui64 ID)
-        : ID_(ID)
+    TConsumer::TConsumer(ui64 ID, TShop* shop)
+        : ID_(ID), Shop_(shop)
     {}
 
-    bool TConsumer::MakeCart() {
+    bool TConsumer::MakeCart(ui64 cartID) {
+        Cart_ = TCart(cartID);
         return true;
     }
 
     bool TConsumer::AddBook(const TBook& book) {
-        return true;
+        if (!Shop_->HasBook(book.ID())) {
+            return false;
+        }
+        return Cart_.AddBook(book);
     }
 
     TOrder TConsumer::MakeOrder(ui64 orderID) {
-        
+        std::vector<std::pair<ui64, size_t>> booksInfo;
+        for (const auto& bookID : Cart_.BooksInCart()) {
+            booksInfo.emplace_back(bookID, 1);
+        }
+        TOrder order(OrderIDCounter++, booksInfo);
+        Shop_->MakeOrder(order);
+        Cart_.Clear();
+        Orders_.push_back(order.ID());
+        return order;
     }
     
     TOrder::TStatus TConsumer::GetStatus(ui64 orderID) {
-        return {};
+        return Shop_->Order(Orders_[orderID]).GetStatus();
     }
     
     bool TConsumer::Refund(ui64 orderID, RefundOptions refOpt) {
-        return true;
+        return Shop_->RefundOrder(orderID);
     }
 
     ui64 TConsumer::ID() const {
