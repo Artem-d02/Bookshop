@@ -58,15 +58,28 @@ namespace NBookshop {
             REFUNDED
         };
         TOrder() = default;
-        explicit TOrder(ui64 ID, const std::vector<ui64>& books);
+        explicit TOrder(ui64 ID, const std::vector<std::pair<ui64, size_t>>& books);    //  { bookID : count}
         TStatus GetStatus() const;
         bool ChangeStatus(TStatus newStatus);
-        const std::vector<ui64>& Books() const;
+        const std::vector<std::pair<ui64, size_t>>& Books() const;
         ui64 ID() const;
     private:
         TStatus Status_{TStatus::NOT_CREATED};
-        std::vector<ui64> Books_;
-        ui64 ID_;
+        std::vector<std::pair<ui64, size_t>> Books_;
+        ui64 ID_{};
+    };
+
+    class TShop final {
+        std::unordered_map<ui64, TBook> BooksInStock_;
+        std::unordered_map<ui64, TOrder> Orders_;
+    public:
+        TShop() = default;
+        bool AddBook(const TBook& book);
+        bool MakeOrder(const TOrder& newOrder);
+        bool DeliverOrder(ui64 orderID);
+        bool RefundBook(ui64 bookID);
+        TBook& BookInfo(ui64 bookID);
+        TOrder& Order(ui64 orderID);
     };
 
     class TConsumer {
@@ -79,27 +92,19 @@ namespace NBookshop {
     private:
         ui64 ID_{};
         TCart Cart_;
-        std::vector<TOrder> Orders_;
+        std::vector<ui64> Orders_;
     public:
         TConsumer() = default;
         virtual ~TConsumer() = default;
         explicit TConsumer(ui64 ID);
         bool MakeCart();
-        bool AddBook(ui64 bookId);
-        bool MakeOrder(ui64 orderID);
+        bool AddBook(const TBook& book);
+        TOrder MakeOrder(ui64 orderID);
         TOrder::TStatus GetStatus(ui64 orderID);
         bool Refund(ui64 orderID, RefundOptions refOpt);
         ui64 ID() const;
         const std::vector<ui64>& BooksInCart() const;
-        std::vector<TOrder>& Orders();
+        std::vector<ui64>& Orders();
     };
 
-    class TShop final {
-        std::unordered_map<ui64, TBook> BooksInStock;
-    public:
-        TShop() = default;
-        bool AddBook(const TBook& book);
-        bool DeliverOrder(ui64 orderID);
-        bool RefundBook(ui64 bookID);
-    };
 }

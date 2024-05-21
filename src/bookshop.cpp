@@ -1,4 +1,5 @@
 #include "bookshop/bookshop.hpp"
+#include <exception>
 
 namespace NBookshop {
 
@@ -58,15 +59,20 @@ namespace NBookshop {
     {}
 
     bool TCart::AddBook(const TBook& book) {
-        Books_.push_back(book.ID());
-        return true;
+        try {
+            Books_.push_back(book.ID());
+            return true;
+        }
+        catch (const std::exception& e) {
+            return false;
+        }
     }
 
     const std::vector<ui64>& TCart::BooksInCart() const {
         return Books_;
     }
 
-    TOrder::TOrder(ui64 ID, const std::vector<ui64>& books)
+    TOrder::TOrder(ui64 ID, const std::vector<std::pair<ui64, size_t>>& books)
         : Books_(books), ID_(ID)
     {}
 
@@ -75,10 +81,16 @@ namespace NBookshop {
     }
 
     bool TOrder::ChangeStatus(TStatus newStatus) {
-        return true;
+        try {
+            Status_ = newStatus;
+            return true;
+        }
+        catch (const std::exception& e) {
+            return false;
+        }
     }
 
-    const std::vector<ui64>& TOrder::Books() const {
+    const std::vector<std::pair<ui64, size_t>>& TOrder::Books() const {
         return Books_;
     }
 
@@ -94,12 +106,12 @@ namespace NBookshop {
         return true;
     }
 
-    bool TConsumer::AddBook(ui64 bookId) {
+    bool TConsumer::AddBook(const TBook& book) {
         return true;
     }
 
-    bool TConsumer::MakeOrder(ui64 orderID) {
-        return true;
+    TOrder TConsumer::MakeOrder(ui64 orderID) {
+        
     }
     
     TOrder::TStatus TConsumer::GetStatus(ui64 orderID) {
@@ -118,11 +130,15 @@ namespace NBookshop {
         return Cart_.BooksInCart();
     }
 
-    std::vector<TOrder>& TConsumer::Orders() {
+    std::vector<ui64>& TConsumer::Orders() {
         return Orders_;
     }
 
     bool TShop::AddBook(const TBook& book) {
+        return true;
+    }
+
+    bool TShop::MakeOrder(const TOrder& newOrder) {
         return true;
     }
 
@@ -132,5 +148,13 @@ namespace NBookshop {
 
     bool TShop::RefundBook(ui64 bookID) {
         return true;
+    }
+
+    TBook& TShop::BookInfo(ui64 bookID) {
+        
+    }
+
+    TOrder& TShop::Order(ui64 orderID) {
+
     }
 }
