@@ -189,7 +189,15 @@ namespace NBookshop {
         return true;
     }
 
-    bool TShop::RefundBook(ui64 bookID) {
+    bool TShop::RefundBook(const std::pair<ui64, size_t>& bookInfo) {
+        if (BooksInStock_.find(bookInfo.first) == BooksInStock_.end()) {
+            return false;
+        }
+        BooksInStock_[bookInfo.first].ChangeExemplarsInStock(bookInfo.second);
+        return true;
+    }
+
+    bool TShop::RefundOrder(ui64 orderID) {
         return true;
     }
 

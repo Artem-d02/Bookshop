@@ -79,7 +79,8 @@ namespace NBookshop {
         bool AddBook(const TBook& book);
         bool MakeOrder(const TOrder& newOrder);
         bool DeliverOrder(ui64 orderID);
-        bool RefundBook(ui64 bookID);
+        bool RefundBook(const std::pair<ui64, size_t>& bookInfo);
+        bool RefundOrder(ui64 orderID);
         bool HasBook(ui64 bookID);
         TBook& BookInfo(ui64 bookID);
         TOrder& Order(ui64 orderID);
