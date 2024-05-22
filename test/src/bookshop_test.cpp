@@ -92,7 +92,20 @@ TEST(BookShopTest, CheckConsumer)
   auto orderID = consumer.Orders()[0];
   auto& order1InShop = shop.Order(orderID);
 
-  
+  ASSERT_EQ(order1InShop.Books().size(), 2);
+
+  ASSERT_TRUE(order1InShop.ChangeStatus(NBookshop::TOrder::TStatus::DONE));
+
+  ASSERT_EQ(consumer.GetStatus(order1InShop.ID()), NBookshop::TOrder::TStatus::DONE);
+
+  ASSERT_TRUE(consumer.AddBook(book2));
+
+  NBookshop::ui64 newOrderID = 54321;
+  auto order2 = consumer.MakeOrder(newOrderID);
+
+  auto& orders = consumer.Orders();
+  auto ordForRefIt = std::find_if(orders.cbegin(), orders.cend(), [ID = newOrderID](const auto& orderID) { return orderID == ID; });
+  ASSERT_NE(ordForRefIt, orders.cend());
 }
 
 int main(int argc, char **argv)
