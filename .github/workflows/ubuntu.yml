@@ -2,54 +2,63 @@ name: Ubuntu
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, in_progress ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  workflow_dispatch:
 
 env:
   BUILD_TYPE: Release
   INSTALL_LOCATION: .local
 
+permissions:
+  contents: write
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       
     - name: cache dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cache
       with:
         path: ${{ github.workspace }}/${{ env.INSTALL_LOCATION }}
         key: ${{ runner.os }}-dependencies
 
+    - name: install deps
+      run: |
+        pip install coverage
+        sudo apt-get install cppcheck
+
+    - name: static analysis
+      run: |
+        cppcheck src --error-exitcode=1
+        cppcheck test --error-exitcode=1
+    
     - name: install GoogleTest
       if: ${{ steps.cache.output.cache-hit != 'true' }}
       run: |
         cd ..
-        git clone https://github.com/google/googletest.git --branch release-1.13.0
+        git clone https://github.com/google/googletest.git --branch release-1.11.0
         cd googletest
         cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION
         cmake --build build --config Release
         cmake --build build --target install --config Release
 
     - name: configure
-      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION -DProject_ENABLE_CODE_COVERAGE=1
+      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/$INSTALL_LOCATION -Dbookshop_ENABLE_CODE_COVERAGE=1 -Dbookshop_ENABLE_UNIT_TESTING=1 -Dbookshop_USE_ASAN=1
       
     - name: build
       run: cmake --build build --config $BUILD_TYPE -j4
 
-    - name: run tests
+    - name: run tests and dynamic analisys
       run: |
         cd build
         ctest -C $BUILD_TYPE -VV
 
     - name: Code coverage using Codecov 
-      run: bash <(curl -s https://codecov.io/bash) 
-
-    - name: install project
-      run: cmake --build build --target install --config Release 
-
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
