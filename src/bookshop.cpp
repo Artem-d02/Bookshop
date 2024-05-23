@@ -4,6 +4,7 @@
 
 namespace NBookshop {
 
+    static ui64 BookIDCounter{0};
     TBook::TBook(
             const std::string& name,
             const std::string& author,
@@ -91,13 +92,23 @@ namespace NBookshop {
         : Books_(books), ID_(ID)
     {}
 
-    TOrder::TStatus TOrder::GetStatus() const {
+    TOrder::EStatus TOrder::GetStatus() const {
         return Status_;
     }
 
-    bool TOrder::ChangeStatus(TStatus newStatus) {
+    bool TOrder::ChangeStatus(EStatus newStatus) {
         try {
             Status_ = newStatus;
+            return true;
+        }
+        catch (const std::exception& e) {
+            return false;
+        }
+    }
+
+    bool TOrder::ChangeRefundOption(ERefundOptions refOpt) {
+        try {
+            RefundOptions_ = refOpt;
             return true;
         }
         catch (const std::exception& e) {
@@ -141,16 +152,16 @@ namespace NBookshop {
         return order;
     }
     
-    TOrder::TStatus TConsumer::GetStatus(ui64 orderID) {
+    TOrder::EStatus TConsumer::GetStatus(ui64 orderID) {
         auto it = std::find(Orders_.cbegin(), Orders_.cend(), orderID);
         if (it != Orders_.cend()) {
             return Shop_->Order(orderID).GetStatus();
         }
-        return TOrder::TStatus::NOT_CREATED;
+        return TOrder::EStatus::NOT_CREATED;
     }
     
-    bool TConsumer::Refund(ui64 orderID, RefundOptions refOpt) {
-        return Shop_->RefundOrder(orderID);
+    bool TConsumer::Refund(ui64 orderID, TOrder::ERefundOptions refOpt) {
+        return Shop_->RefundOrder(orderID, refOpt);
     }
 
     ui64 TConsumer::ID() const {
@@ -206,7 +217,7 @@ namespace NBookshop {
         if (Orders_.find(orderID) == Orders_.end()) {
             return false;
         }
-        Orders_[orderID].ChangeStatus(TOrder::TStatus::DONE);
+        Orders_[orderID].ChangeStatus(TOrder::EStatus::DONE);
         return true;
     }
 
@@ -218,14 +229,15 @@ namespace NBookshop {
         return true;
     }
 
-    bool TShop::RefundOrder(ui64 orderID) {
+    bool TShop::RefundOrder(ui64 orderID, TOrder::ERefundOptions refOpt) {
         if (Orders_.find(orderID) == Orders_.end()) {
             return false;
         }
         for (const auto& bookInfo : Orders_[orderID].Books()) {
             RefundBook(bookInfo);
         }
-        Orders_[orderID].ChangeStatus(TOrder::TStatus::REFUNDED);
+        Orders_[orderID].ChangeStatus(TOrder::EStatus::REFUNDED);
+        Orders_[orderID].ChangeRefundOption(refOpt);
         return true;
     }
 

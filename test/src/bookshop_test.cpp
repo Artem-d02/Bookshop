@@ -66,11 +66,13 @@ TEST(BookShopTest, CheckOrder)
 
   ASSERT_EQ(order.Books().size(), 2);
   ASSERT_EQ(order.Books()[0].first, book1.ID());
-  ASSERT_EQ(order.GetStatus(), NBookshop::TOrder::TStatus::NOT_CREATED);
+  ASSERT_EQ(order.GetStatus(), NBookshop::TOrder::EStatus::NOT_CREATED);
 
-  ASSERT_TRUE(order.ChangeStatus(NBookshop::TOrder::TStatus::PROCESSING));
+  ASSERT_TRUE(order.ChangeStatus(NBookshop::TOrder::EStatus::PROCESSING));
 
-  ASSERT_EQ(order.GetStatus(), NBookshop::TOrder::TStatus::PROCESSING);
+  ASSERT_EQ(order.GetStatus(), NBookshop::TOrder::EStatus::PROCESSING);
+
+  ASSERT_TRUE(order.ChangeRefundOption(NBookshop::TOrder::ERefundOptions::COURIER));
 }
 
 TEST(BookShopTest, checkShop) {
@@ -107,11 +109,11 @@ TEST(BookShopTest, checkShop) {
   ASSERT_TRUE(shop.RefundBook({ book2.ID(), 1 }));
   ASSERT_FALSE(shop.RefundBook({ 100500, 1 }));
 
-  ASSERT_TRUE(shop.RefundOrder(validOrder.ID()));
+  ASSERT_TRUE(shop.RefundOrder(validOrder.ID(), NBookshop::TOrder::ERefundOptions::SELF));
 
-  ASSERT_FALSE(shop.RefundOrder(invalidOrder1.ID()));
+  ASSERT_FALSE(shop.RefundOrder(invalidOrder1.ID(), NBookshop::TOrder::ERefundOptions::SELF));
 
-  ASSERT_TRUE(shop.Order(validOrder.ID()).GetStatus() == NBookshop::TOrder::TStatus::REFUNDED);
+  ASSERT_TRUE(shop.Order(validOrder.ID()).GetStatus() == NBookshop::TOrder::EStatus::REFUNDED);
 }
 
 TEST(BookShopTest, CheckConsumer)
@@ -141,11 +143,11 @@ TEST(BookShopTest, CheckConsumer)
 
   ASSERT_EQ(order1InShop.Books().size(), 2);
 
-  ASSERT_TRUE(order1InShop.ChangeStatus(NBookshop::TOrder::TStatus::DONE));
+  ASSERT_TRUE(order1InShop.ChangeStatus(NBookshop::TOrder::EStatus::DONE));
 
-  ASSERT_EQ(consumer.GetStatus(order1InShop.ID()), NBookshop::TOrder::TStatus::DONE);
+  ASSERT_EQ(consumer.GetStatus(order1InShop.ID()), NBookshop::TOrder::EStatus::DONE);
 
-  ASSERT_EQ(consumer.GetStatus(0), NBookshop::TOrder::TStatus::NOT_CREATED);
+  ASSERT_EQ(consumer.GetStatus(0), NBookshop::TOrder::EStatus::NOT_CREATED);
 
   ASSERT_TRUE(consumer.AddBook(book2));
 
@@ -157,10 +159,10 @@ TEST(BookShopTest, CheckConsumer)
 
   ASSERT_EQ(orders[1], newOrderID);
 
-  auto ordForRefIt = std::find_if(orders.cbegin(), orders.cend(), [ID = newOrderID](const auto& orderID) { return orderID == ID; });
+  auto ordForRefIt = std::find_if(orders.cbegin(), orders.cend(), [ID = newOrderID](const auto& curOrderID) { return curOrderID == ID; });
   ASSERT_NE(ordForRefIt, orders.cend());
 
-  ASSERT_TRUE(consumer.Refund(*ordForRefIt, NBookshop::TConsumer::RefundOptions::SELF));
+  ASSERT_TRUE(consumer.Refund(*ordForRefIt, NBookshop::TOrder::ERefundOptions::SELF));
 }
 
 int main(int argc, char **argv)

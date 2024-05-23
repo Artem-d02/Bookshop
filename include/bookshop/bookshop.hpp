@@ -7,7 +7,6 @@
 
 namespace NBookshop {
     using ui64 = u_int64_t;
-    static ui64 BookIDCounter{0};
     static ui64 CartIDCounter{0};
 
     class TBook final {
@@ -53,21 +52,29 @@ namespace NBookshop {
 
     class TOrder final {
     public:
-        enum class TStatus {
+        enum class EStatus {
             NOT_CREATED,
             PROCESSING,
             DELIVERING,
             DONE,
             REFUNDED
         };
+        enum class ERefundOptions {
+            COURIER,
+            SELF,
+            NOT_DELIVERED,
+            NO_REFUND
+        };
         TOrder() = default;
         explicit TOrder(ui64 ID, const std::vector<std::pair<ui64, size_t>>& books);    //  { bookID : count}
-        TStatus GetStatus() const;
-        bool ChangeStatus(TStatus newStatus);
+        EStatus GetStatus() const;
+        bool ChangeStatus(EStatus newStatus);
+        bool ChangeRefundOption(ERefundOptions refOpt);
         const std::vector<std::pair<ui64, size_t>>& Books() const;
         ui64 ID() const;
     private:
-        TStatus Status_{TStatus::NOT_CREATED};
+        EStatus Status_{EStatus::NOT_CREATED};
+        ERefundOptions RefundOptions_{ERefundOptions::NO_REFUND};
         std::vector<std::pair<ui64, size_t>> Books_;
         ui64 ID_{};
     };
@@ -81,7 +88,7 @@ namespace NBookshop {
         bool MakeOrder(const TOrder& newOrder);
         bool DeliverOrder(ui64 orderID);
         bool RefundBook(const std::pair<ui64, size_t>& bookInfo);
-        bool RefundOrder(ui64 orderID);
+        bool RefundOrder(ui64 orderID, TOrder::ERefundOptions refOpt);
         bool HasBook(ui64 bookID) const;
         TBook& BookInfo(ui64 bookID);
         bool HasOrder(ui64 orderID) const;
@@ -89,12 +96,6 @@ namespace NBookshop {
     };
 
     class TConsumer final {
-    public:
-        enum class RefundOptions {
-            COURIER,
-            SELF,
-            NOT_DELIVERED
-        };
     private:
         ui64 ID_{};
         TCart Cart_;
@@ -105,8 +106,8 @@ namespace NBookshop {
         bool MakeCart(ui64 cartID);
         bool AddBook(const TBook& book);
         TOrder MakeOrder(ui64 orderID);
-        TOrder::TStatus GetStatus(ui64 orderID);
-        bool Refund(ui64 orderID, RefundOptions refOpt);
+        TOrder::EStatus GetStatus(ui64 orderID);
+        bool Refund(ui64 orderID, TOrder::ERefundOptions refOpt);
         ui64 ID() const;
         const std::vector<ui64>& BooksInCart() const;
         std::vector<ui64>& Orders();
