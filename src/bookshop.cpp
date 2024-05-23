@@ -1,5 +1,6 @@
 #include "bookshop/bookshop.hpp"
 #include <exception>
+#include <algorithm>
 
 namespace NBookshop {
 
@@ -133,7 +134,7 @@ namespace NBookshop {
         for (const auto& bookID : Cart_.BooksInCart()) {
             booksInfo.emplace_back(bookID, 1);
         }
-        TOrder order(OrderIDCounter++, booksInfo);
+        TOrder order(orderID, booksInfo);
         Shop_->MakeOrder(order);
         Cart_.Clear();
         Orders_.push_back(order.ID());
@@ -141,7 +142,11 @@ namespace NBookshop {
     }
     
     TOrder::TStatus TConsumer::GetStatus(ui64 orderID) {
-        return Shop_->Order(Orders_[orderID]).GetStatus();
+        auto it = std::find(Orders_.cbegin(), Orders_.cend(), orderID);
+        if (it != Orders_.cend()) {
+            return Shop_->Order(orderID).GetStatus();
+        }
+        return TOrder::TStatus::NOT_CREATED;
     }
     
     bool TConsumer::Refund(ui64 orderID, RefundOptions refOpt) {

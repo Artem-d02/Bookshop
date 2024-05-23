@@ -104,6 +104,10 @@ TEST(BookShopTest, CheckConsumer)
   auto order2 = consumer.MakeOrder(newOrderID);
 
   auto& orders = consumer.Orders();
+  ASSERT_EQ(orders.size(), 2);
+
+  ASSERT_EQ(orders[1], newOrderID);
+
   auto ordForRefIt = std::find_if(orders.cbegin(), orders.cend(), [ID = newOrderID](const auto& orderID) { return orderID == ID; });
   ASSERT_NE(ordForRefIt, orders.cend());
 }
