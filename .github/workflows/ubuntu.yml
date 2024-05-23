@@ -2,9 +2,9 @@ name: Ubuntu
 
 on:
   push:
-    branches: [ main, in_progress ]
+    branches: [ master, in_progress ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
