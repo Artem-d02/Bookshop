@@ -13,14 +13,14 @@ namespace NBookshop {
             const std::string& genre,
             size_t exemplarsInStock
     )
-        :   Name_(name),
+        :   ID_(BookIDCounter++),
+            Name_(name),
             Author_(author),
             CreationYear_(creationYear),
             Price_(price),
             Publishing_(publishing),
             Genre_(genre),
-            ExemplarsInStock_(exemplarsInStock),
-            ID_(BookIDCounter++)
+            ExemplarsInStock_(exemplarsInStock)
     {}
 
     const std::string& TBook::Name() const {
@@ -53,11 +53,11 @@ namespace NBookshop {
 
     bool TBook::ChangeExemplarsInStock(int delta) {
         if (delta < 0) {
-            if (std::abs(delta) > ExemplarsInStock_) {
+            if (static_cast<size_t>(std::abs(delta)) > ExemplarsInStock_) {
                 return false;
             }
         }
-        ExemplarsInStock_ += delta;
+        ExemplarsInStock_ += static_cast<size_t>(delta);
         return true;
     }
 
@@ -214,7 +214,7 @@ namespace NBookshop {
         if (BooksInStock_.find(bookInfo.first) == BooksInStock_.end()) {
             return false;
         }
-        BooksInStock_[bookInfo.first].ChangeExemplarsInStock(bookInfo.second);
+        BooksInStock_[bookInfo.first].ChangeExemplarsInStock(static_cast<int>(bookInfo.second));
         return true;
     }
 

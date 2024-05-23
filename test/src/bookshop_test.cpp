@@ -35,6 +35,7 @@ TEST(BookShopTest, CheckBook)
   ASSERT_EQ(book1.Author(), autor);
   ASSERT_EQ(book1.CreationYear(), creationYear1);
   ASSERT_EQ(book1.Price(), price1);
+  ASSERT_EQ(book1.Publishing(), publishing);
   ASSERT_EQ(book1.Genre(), genre);
 
   ASSERT_EQ(book1.ExemplarsInStock(), exCount1);
@@ -107,6 +108,8 @@ TEST(BookShopTest, checkShop) {
   ASSERT_FALSE(shop.RefundBook({ 100500, 1 }));
 
   ASSERT_TRUE(shop.RefundOrder(validOrder.ID()));
+
+  ASSERT_FALSE(shop.RefundOrder(invalidOrder1.ID()));
 
   ASSERT_TRUE(shop.Order(validOrder.ID()).GetStatus() == NBookshop::TOrder::TStatus::REFUNDED);
 }
