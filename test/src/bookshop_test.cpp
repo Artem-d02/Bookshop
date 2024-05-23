@@ -110,6 +110,7 @@ TEST(BookShopTest, CheckConsumer)
 
 int main(int argc, char **argv)
 {
+  //  Start google tests
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
