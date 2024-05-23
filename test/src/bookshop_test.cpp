@@ -59,7 +59,7 @@ TEST(BookShopTest, CheckCart)
 
 TEST(BookShopTest, CheckOrder)
 {
-  ASSERT_NO_THROW(NBookshop::TBook{});
+  ASSERT_NO_THROW(NBookshop::TOrder{});
 
   NBookshop::TOrder order(222, { { book1.ID(), 1 }, { book2.ID(), 1 } });
 
