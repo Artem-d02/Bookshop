@@ -9,7 +9,6 @@ namespace NBookshop {
     using ui64 = u_int64_t;
     static ui64 BookIDCounter{0};
     static ui64 CartIDCounter{0};
-    static ui64 OrderIDCounter{0};
 
     class TBook final {
         ui64 ID_;

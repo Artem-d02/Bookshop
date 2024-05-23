@@ -1,20 +1,50 @@
 #include "bookshop/bookshop.hpp"
 
 #include <gtest/gtest.h>
+#include <string>
 #include <vector>
 #include <algorithm>
 
-NBookshop::TBook book1("The last wish", "Andrzej Sapkowski", 1993, 30.99, "SuperNova", "Adventure", 100);
-NBookshop::TBook book2("Sword of Destiny", "Andrzej Sapkowski", 1992, 35.99, "SuperNova", "Adventure", 50);
+const std::string name1 = "The last wish";
+const std::string name2 = "Sword of Destiny";
+
+const std::string autor = "Andrzej Sapkowski";
+
+const int creationYear1 = 1993;
+const int creationYear2 = 1992;
+
+const double price1 = 30.99;
+const double price2 = 35.99;
+
+const std::string publishing = "SuperNova";
+
+const std::string genre = "Adventure";
+
+const size_t exCount1 = 100;
+const size_t exCount2 = 50;
+
+NBookshop::TBook book1(name1, autor, creationYear1, price1, publishing, genre, exCount1);
+NBookshop::TBook book2(name2, autor, creationYear2, price2, publishing, genre, exCount2);
 NBookshop::TShop shop;
 
 TEST(BookShopTest, CheckBook)
 {
-  ASSERT_EQ(book1.Name(), "The last wish");
-  ASSERT_EQ(book1.ExemplarsInStock(), 100);
+  ASSERT_NO_THROW(NBookshop::TBook{});
 
-  book1.ChangeExemplarsInStock(50);
-  ASSERT_EQ(book1.ExemplarsInStock(), 150);
+  ASSERT_EQ(book1.Name(), name1);
+  ASSERT_EQ(book1.Author(), autor);
+  ASSERT_EQ(book1.CreationYear(), creationYear1);
+  ASSERT_EQ(book1.Price(), price1);
+  ASSERT_EQ(book1.Genre(), genre);
+
+  ASSERT_EQ(book1.ExemplarsInStock(), exCount1);
+
+  const size_t deltaEx = 50;
+  ASSERT_TRUE(book1.ChangeExemplarsInStock(deltaEx));
+  ASSERT_EQ(book1.ExemplarsInStock(), exCount1 + deltaEx);
+
+  const int invalidDeltaEx = -500;
+  ASSERT_FALSE(book1.ChangeExemplarsInStock(invalidDeltaEx));
 }
 
 TEST(BookShopTest, CheckCart)
@@ -29,6 +59,8 @@ TEST(BookShopTest, CheckCart)
 
 TEST(BookShopTest, CheckOrder)
 {
+  ASSERT_NO_THROW(NBookshop::TBook{});
+
   NBookshop::TOrder order(222, { { book1.ID(), 1 }, { book2.ID(), 1 } });
 
   ASSERT_EQ(order.Books().size(), 2);
@@ -44,6 +76,8 @@ TEST(BookShopTest, checkShop) {
   ASSERT_TRUE(shop.AddBook(book1));
   ASSERT_TRUE(shop.AddBook(book2));
 
+  ASSERT_TRUE(shop.AddBook(book2));
+
   ASSERT_TRUE(shop.HasBook(book1.ID()));
 
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock());
@@ -56,17 +90,21 @@ TEST(BookShopTest, checkShop) {
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock() - book1Count);
 
   const size_t tooManyBooks = 500;
-  NBookshop::TOrder invalidOrder(444, { { book1.ID(), tooManyBooks } }); //  too many books
+  NBookshop::TOrder invalidOrder1(444, { { book1.ID(), tooManyBooks } }); //  too many books
 
-  ASSERT_FALSE(shop.MakeOrder(invalidOrder));
+  ASSERT_FALSE(shop.MakeOrder(invalidOrder1));
   ASSERT_EQ(shop.BookInfo(book1.ID()).ExemplarsInStock(), book1.ExemplarsInStock() - book1Count);
+
+  NBookshop::TOrder invalidOrder2(555, { { 100500, 1 } }); //  book which is not in stock
+  ASSERT_FALSE(shop.MakeOrder(invalidOrder2));
 
   ASSERT_TRUE(shop.HasOrder(validOrder.ID()));
 
   ASSERT_TRUE(shop.DeliverOrder(validOrder.ID()));
-  ASSERT_FALSE(shop.DeliverOrder(invalidOrder.ID()));
+  ASSERT_FALSE(shop.DeliverOrder(invalidOrder1.ID()));
 
   ASSERT_TRUE(shop.RefundBook({ book2.ID(), 1 }));
+  ASSERT_FALSE(shop.RefundBook({ 100500, 1 }));
 
   ASSERT_TRUE(shop.RefundOrder(validOrder.ID()));
 
@@ -75,13 +113,19 @@ TEST(BookShopTest, checkShop) {
 
 TEST(BookShopTest, CheckConsumer)
 {
-  NBookshop::TConsumer consumer(12345, &shop);
+  const NBookshop::ui64 ConsumerID = 12345;
+  NBookshop::TConsumer consumer(ConsumerID, &shop);
+
+  ASSERT_EQ(consumer.ID(), ConsumerID);
 
   ASSERT_TRUE(consumer.MakeCart(1111));
 
   ASSERT_TRUE(consumer.AddBook(book1));
 
   ASSERT_TRUE(consumer.AddBook(book2));
+
+  NBookshop::TBook noExistedBook;
+  ASSERT_FALSE(consumer.AddBook(noExistedBook));
 
   ASSERT_EQ(consumer.BooksInCart().size(), 2);
 
@@ -98,6 +142,8 @@ TEST(BookShopTest, CheckConsumer)
 
   ASSERT_EQ(consumer.GetStatus(order1InShop.ID()), NBookshop::TOrder::TStatus::DONE);
 
+  ASSERT_EQ(consumer.GetStatus(0), NBookshop::TOrder::TStatus::NOT_CREATED);
+
   ASSERT_TRUE(consumer.AddBook(book2));
 
   NBookshop::ui64 newOrderID = 54321;
@@ -110,6 +156,8 @@ TEST(BookShopTest, CheckConsumer)
 
   auto ordForRefIt = std::find_if(orders.cbegin(), orders.cend(), [ID = newOrderID](const auto& orderID) { return orderID == ID; });
   ASSERT_NE(ordForRefIt, orders.cend());
+
+  ASSERT_TRUE(consumer.Refund(*ordForRefIt, NBookshop::TConsumer::RefundOptions::SELF));
 }
 
 int main(int argc, char **argv)

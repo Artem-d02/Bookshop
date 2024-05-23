@@ -169,7 +169,7 @@ namespace NBookshop {
         try {
             auto it = BooksInStock_.find(book.ID());
             if (it != BooksInStock_.end()) {
-                return it->second.ChangeExemplarsInStock(book.ExemplarsInStock());
+                return it->second.ChangeExemplarsInStock(static_cast<int>(book.ExemplarsInStock()));
             }
             else {
                 BooksInStock_.emplace(book.ID(), book);
@@ -194,7 +194,7 @@ namespace NBookshop {
 
         //  If there are enough books
         for (const auto& [bookID, count] : newOrder.Books()) {
-            BooksInStock_[bookID].ChangeExemplarsInStock(-count);
+            BooksInStock_[bookID].ChangeExemplarsInStock(-static_cast<int>(count));
         }
 
         Orders_.emplace(newOrder.ID(), newOrder);
